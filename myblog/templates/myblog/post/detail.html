@@ -1,0 +1,50 @@
+{% extends 'myblog/base.html' %}
+{% load blog_tags %}
+{% block title %}
+    {{ post.title }}
+{% endblock %}
+{% block content %}
+    <h1>{{ post.title }}</h1>
+        <p class="date">
+            posted@{{ post.publish }} {{ post.author }}
+            <a href="{% url "myblog:post_share" post.id %}">分享文章</a>
+        </p>
+{#    {{ post.content|linebreaks }}#}
+    {{ post.content| markdown}}
+
+    <!-- 推荐类似文章 -->
+     <h2>相似文章</h2>
+        {% for post in similar_posts %}
+     <p>
+         <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+     </p>
+        {% empty %}
+        没有类似的文章。
+        {% endfor %}
+    <!-- 文章评论 -->
+    {% with comments.count as total_comments %}
+        <h2>{{ total_comments }} 条评论。 {{ total_comments|pluralize }}</h2>
+    {% endwith %}
+
+    {% for comment in comments %}
+        <div class="comment">
+        <p class="info">
+            评论: {{ forloop.counter }}&nbsp;{{ comment.name }}&nbsp;{{ comment.created }}
+        </p>
+            {{ comment.body|linebreaks }}
+        </div>
+    {% empty %}
+        <p>没有任何评论.</p>
+    {% endfor %}
+
+    {% if new_comment %}
+        <h2>你写的评论已经提交.</h2>
+    {% else %}
+        <h2>评论下吧</h2>
+        <form action="." method="post">
+            {{ comment_form.as_p }}
+            {% csrf_token %}
+            <p><input type="submit" value="提交"></p>
+        </form>
+    {% endif %}
+{% endblock %}
